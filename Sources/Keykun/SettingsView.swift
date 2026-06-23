@@ -1,0 +1,165 @@
+import SwiftUI
+import KeykunCore
+
+/// 設定ダイアログの編集状態。編集は作業コピー上で行い、Apply/OK で確定する。
+@MainActor
+final class SettingsViewModel: ObservableObject {
+    /// 編集中の作業コピー。
+    @Published var settings: KeykunCore.Settings
+    /// 直近に確定（Apply/OK）した内容。Cancel 時の復帰先。
+    private var committed: KeykunCore.Settings
+    private let onApply: (KeykunCore.Settings) -> Void
+
+    init(settings: KeykunCore.Settings, onApply: @escaping (KeykunCore.Settings) -> Void) {
+        self.settings = settings
+        self.committed = settings
+        self.onApply = onApply
+    }
+
+    /// 未確定の変更があるか。
+    var hasChanges: Bool { settings != committed }
+
+    /// 作業コピーを確定し保存・反映する。
+    func apply() {
+        committed = settings
+        onApply(settings)
+    }
+
+    /// 未確定の変更を破棄して直近の確定内容に戻す。
+    func revert() {
+        settings = committed
+    }
+}
+
+/// 設定ダイアログ本体。タブで機能ごとの設定を切り替える。
+/// 今後キー機能を増やす場合は、TabView 内にタブを追加する。
+struct SettingsView: View {
+    @ObservedObject var viewModel: SettingsViewModel
+    let onClose: () -> Void
+
+    /// 選択可能な入力ソース一覧（入力切り替えタブで使用）。
+    let inputSources: [InputSourceInfo]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            TabView {
+                SafeQuitSettingsTab(settings: $viewModel.settings.safeQuit)
+                    .tabItem { Text(L.string("tab.safe_quit")) }
+
+                InputSwitchSettingsTab(settings: $viewModel.settings.inputSwitch, sources: inputSources)
+                    .tabItem { Text(L.string("tab.input_switch")) }
+                // 将来のキー機能タブはここに追加する。
+            }
+            .padding()
+
+            Divider()
+
+            HStack {
+                Spacer()
+                Button(L.string("button.cancel")) {
+                    viewModel.revert()
+                    onClose()
+                }
+                .keyboardShortcut(.cancelAction)
+
+                Button(L.string("button.apply")) {
+                    viewModel.apply()
+                }
+                .disabled(!viewModel.hasChanges)
+
+                Button(L.string("button.ok")) {
+                    viewModel.apply()
+                    onClose()
+                }
+                .keyboardShortcut(.defaultAction)
+            }
+            .padding()
+        }
+        .frame(width: 520, height: 360)
+    }
+}
+
+/// 「安全な Quit」タブ。⌘Q 二度押しの有効/無効と猶予時間を設定する。
+struct SafeQuitSettingsTab: View {
+    @SwiftUI.Binding var settings: SafeQuitSettings
+
+    /// 選べる猶予時間の候補（秒）。
+    private let intervalOptions: [TimeInterval] = [0.5, 1.0, 1.5, 2.0]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Toggle(isOn: $settings.isEnabled) {
+                Text(L.string("safe_quit.enabled"))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            HStack(alignment: .firstTextBaseline) {
+                Text(L.string("safe_quit.interval"))
+                Spacer(minLength: 12)
+                Picker("", selection: $settings.interval) {
+                    ForEach(intervalOptions, id: \.self) { value in
+                        Text(L.format("safe_quit.interval.seconds", value)).tag(value)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 110)
+                .disabled(!settings.isEnabled)
+            }
+
+            Text(L.string("safe_quit.description"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+}
+
+/// 「入力切り替え」タブ。左右 Command の単押しに入力ソースを割り当てる。
+struct InputSwitchSettingsTab: View {
+    @SwiftUI.Binding var settings: InputSwitchSettings
+    let sources: [InputSourceInfo]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Toggle(isOn: $settings.isEnabled) {
+                Text(L.string("input_switch.enabled"))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            sourcePicker(title: L.string("input_switch.left"), selection: $settings.leftCommandSourceID)
+            sourcePicker(title: L.string("input_switch.right"), selection: $settings.rightCommandSourceID)
+
+            Text(L.string("input_switch.description"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    /// 入力ソース選択 Picker（「なし」＋一覧）。
+    private func sourcePicker(title: String, selection: SwiftUI.Binding<String?>) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(title)
+            Spacer(minLength: 12)
+            Picker("", selection: selection) {
+                Text(L.string("input_switch.none")).tag(String?.none)
+                ForEach(sources) { source in
+                    Text(source.localizedName).tag(String?.some(source.id))
+                }
+            }
+            .labelsHidden()
+            .frame(width: 240)
+            .disabled(!settings.isEnabled)
+        }
+    }
+}

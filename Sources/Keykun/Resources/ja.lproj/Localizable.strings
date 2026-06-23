@@ -1,0 +1,38 @@
+/* Menu (StatusBarController) */
+"menu.settings" = "設定…";
+"menu.check_permission" = "アクセシビリティ権限を確認";
+"menu.quit" = "Keykun を終了";
+
+/* Settings window */
+"settings.window.title" = "Keykun 設定";
+
+/* Tabs */
+"tab.safe_quit" = "安全な Quit";
+"tab.input_switch" = "入力切り替え";
+
+/* Safe Quit tab */
+"safe_quit.enabled" = "⌘Q を2回押さないと終了しないようにする";
+"safe_quit.interval" = "2回目を受け付ける猶予時間";
+"safe_quit.interval.seconds" = "%.1f 秒";
+"safe_quit.description" = "⌘Q を1回押すと案内を表示し、猶予時間内にもう一度 ⌘Q を押すと終了します。";
+
+/* Input Switch tab */
+"input_switch.enabled" = "左右の ⌘ 単押しで入力ソースを切り替える";
+"input_switch.left" = "左 ⌘（単押し）";
+"input_switch.right" = "右 ⌘（単押し）";
+"input_switch.none" = "なし";
+"input_switch.description" = "左右の ⌘ を単独で（他キーと一緒に押さず）押して離すと、割り当てた入力ソースに切り替わります。⌘ は組み合わせ時は通常どおり修飾キーとして機能します。";
+
+/* HUD */
+"hud.press_again" = "もう一度 ⌘Q で終了";
+
+/* Permission alert */
+"permission.alert.title" = "アクセシビリティの許可が必要です";
+"permission.alert.body" = "⌘Q の二度押し判定にはキー入力の監視が必要です。\n「システム設定 ＞ プライバシーとセキュリティ ＞ アクセシビリティ」で Keykun を許可してください。許可後は自動的に有効になります。";
+"permission.button.open" = "設定を開く";
+"permission.button.later" = "あとで";
+
+/* Common buttons */
+"button.ok" = "OK";
+"button.cancel" = "キャンセル";
+"button.apply" = "適用";

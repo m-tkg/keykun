@@ -1,0 +1,38 @@
+/* Menu (StatusBarController) */
+"menu.settings" = "Settings…";
+"menu.check_permission" = "Check Accessibility Permission";
+"menu.quit" = "Quit Keykun";
+
+/* Settings window */
+"settings.window.title" = "Keykun Settings";
+
+/* Tabs */
+"tab.safe_quit" = "Safe Quit";
+"tab.input_switch" = "Input Switch";
+
+/* Safe Quit tab */
+"safe_quit.enabled" = "Require pressing ⌘Q twice to quit";
+"safe_quit.interval" = "Time window for the second press";
+"safe_quit.interval.seconds" = "%.1f sec";
+"safe_quit.description" = "Press ⌘Q once to show a reminder; press ⌘Q again within the time window to quit.";
+
+/* Input Switch tab */
+"input_switch.enabled" = "Switch input source with a single ⌘ tap";
+"input_switch.left" = "Left ⌘ (tap)";
+"input_switch.right" = "Right ⌘ (tap)";
+"input_switch.none" = "None";
+"input_switch.description" = "Tap and release the left/right ⌘ alone (no other keys) to switch to the assigned input source. ⌘ still works as a modifier in combinations.";
+
+/* HUD */
+"hud.press_again" = "Press ⌘Q again to quit";
+
+/* Permission alert */
+"permission.alert.title" = "Accessibility permission required";
+"permission.alert.body" = "Keykun needs to monitor key input to detect the double ⌘Q.\nAllow Keykun under System Settings ＞ Privacy & Security ＞ Accessibility. It activates automatically once allowed.";
+"permission.button.open" = "Open Settings";
+"permission.button.later" = "Later";
+
+/* Common buttons */
+"button.ok" = "OK";
+"button.cancel" = "Cancel";
+"button.apply" = "Apply";
