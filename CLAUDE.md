@@ -1,6 +1,15 @@
 # CLAUDE.md
 
 このファイルは、このリポジトリで作業する際のガイダンスを提供します。
+メニューバー常駐アプリ共通の方針は上位ディレクトリの `../CLAUDE_base.md` を参照（本ファイルはその具体例）。
+
+## ブランチ運用（必須）
+
+- **`main` ブランチへ直接コミット/push しない**。変更は必ず **Pull Request 経由**で行う。
+- 作業ブランチは**必ずその時点の最新の `main` から切る**（`git fetch origin && git switch main &&
+  git pull --ff-only` で最新化してから分岐）。PR は `gh pr create` で作成し、マージはレビュー後。
+- リリース用 Actions は `push: branches: [main]` で発火し main への push がそのままリリースに直結するため、
+  事故防止のためにも main 直 push を避ける。
 
 ## プロジェクト概要
 
