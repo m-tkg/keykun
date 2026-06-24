@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let eventTap = KeyEventTap()
     private let safeQuit = SafeQuitHandler()
     private let inputSwitch = InputSwitchHandler()
+    private let modifierDoublePress = ModifierDoublePressHandler()
 
     private var statusBar: StatusBarController?
     private var settingsWindowController: SettingsWindowController?
@@ -31,6 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         eventTap.add(safeQuit)
         eventTap.add(inputSwitch)
+        eventTap.add(modifierDoublePress)
 
         statusBar = StatusBarController(
             openSettings: { [weak self] in self?.openSettings() },
@@ -50,6 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         safeQuit.isEnabled = settings.safeQuit.isEnabled
         safeQuit.interval = settings.safeQuit.interval
         inputSwitch.update(settings.inputSwitch)
+        modifierDoublePress.update(settings.modifierDoublePress)
     }
 
     private func openSettings() {

@@ -38,6 +38,7 @@
 /* Tabs */
 "tab.safe_quit" = "Safe Quit";
 "tab.input_switch" = "Input Switch";
+"tab.modifier_launch" = "Launch App";
 "tab.general" = "General";
 
 /* General tab */
@@ -60,6 +61,19 @@
 "input_switch.action.eisu" = "Eisu key (English)";
 "input_switch.action.kana" = "Kana key (Japanese)";
 "input_switch.description" = "Tap and release the left/right ⌘ alone (no other keys) to send the Eisu/Kana key, switching the IME mode (works reliably regardless of the current input source). ⌘ still works as a modifier in combinations.";
+
+/* Launch App tab (modifier double-tap) */
+"modifier_launch.enabled" = "Launch an app by double-tapping a modifier key";
+"modifier_launch.modifier.command" = "⌘ Command";
+"modifier_launch.modifier.option" = "⌥ Option";
+"modifier_launch.modifier.control" = "⌃ Control";
+"modifier_launch.modifier.shift" = "⇧ Shift";
+"modifier_launch.side.left" = "Left";
+"modifier_launch.side.right" = "Right";
+"modifier_launch.add" = "Add";
+"modifier_launch.choose_app" = "Choose app…";
+"modifier_launch.conflict" = "⌘ is already used by Input Switch. Only one of them can be enabled at a time.";
+"modifier_launch.description" = "Tap and release the chosen modifier key alone twice (no other keys) to launch the assigned app. Use a different key from Input Switch to avoid conflicts. The key still works normally in combinations.";
 
 /* Common units */
 "common.seconds" = "%.1f sec";
