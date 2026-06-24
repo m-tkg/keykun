@@ -9,6 +9,10 @@
 - **`main` ブランチへ直接コミット/push しない**。変更は必ず **Pull Request 経由**で行う。
 - 作業ブランチは**必ずその時点の最新の `main` から切る**（`git fetch origin && git switch main &&
   git pull --ff-only` で最新化してから分岐）。PR は `gh pr create` で作成し、マージはレビュー後。
+- **PR 作成後に追加の修正を行うときは、まずその PR が既にマージされていないか確認する**
+  （`gh pr view <番号> --json state,mergedAt`）。マージ済みの場合、その PR の作業ブランチへ push しても
+  main には反映されない（孤立コミットになる）。マージ済みなら**最新 `main` から新しいブランチを切り直し**、
+  必要な修正と（リリースが要るなら）バージョン更新を入れて別 PR を出す。
 - リリース用 Actions は `push: branches: [main]` で発火し main への push がそのままリリースに直結するため、
   事故防止のためにも main 直 push を避ける。
 
