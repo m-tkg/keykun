@@ -1,6 +1,7 @@
 /* Menu (StatusBarController) */
 "menu.settings" = "設定…";
 "menu.check_permission" = "アクセシビリティ権限を確認";
+"menu.version" = "Keykun %@";
 "menu.check_update" = "アップデートを確認…";
 "menu.install_update" = "アップデート %@ をインストール…";
 "menu.quit" = "Keykun を終了";

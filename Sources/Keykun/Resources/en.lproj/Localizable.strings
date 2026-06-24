@@ -1,6 +1,7 @@
 /* Menu (StatusBarController) */
 "menu.settings" = "Settings…";
 "menu.check_permission" = "Check Accessibility Permission";
+"menu.version" = "Keykun %@";
 "menu.check_update" = "Check for Updates…";
 "menu.install_update" = "Install Update %@…";
 "menu.quit" = "Quit Keykun";

@@ -48,6 +48,13 @@ final class StatusBarController: NSObject {
         }
 
         let menu = NSMenu()
+        // 先頭にバージョン情報（操作不可）。ローカルビルドは併記する。
+        var versionTitle = L.format("menu.version", UpdateService.currentVersion)
+        if isLocalBuild { versionTitle += " (" + L.string("menu_bar.local") + ")" }
+        let versionItem = NSMenuItem(title: versionTitle, action: nil, keyEquivalent: "")
+        versionItem.isEnabled = false
+        menu.addItem(versionItem)
+        menu.addItem(.separator())
         menu.addItem(menuItem(title: L.string("menu.settings"), action: #selector(handleOpenSettings), key: ","))
         menu.addItem(menuItem(title: L.string("menu.check_permission"), action: #selector(handleCheckPermission), key: ""))
         updateItem = menuItem(title: Self.checkUpdateTitle, action: #selector(handleCheckForUpdate), key: "")
