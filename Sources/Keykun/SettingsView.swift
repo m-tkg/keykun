@@ -35,11 +35,17 @@ final class SettingsViewModel: ObservableObject {
 /// 今後キー機能を増やす場合は、TabView 内にタブを追加する。
 struct SettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @ObservedObject var loginItem: LoginItemController
     let onClose: () -> Void
+
+    @State private var loginItemError: String?
 
     var body: some View {
         VStack(spacing: 0) {
             TabView {
+                GeneralSettingsTab(loginItem: loginItem, errorMessage: $loginItemError)
+                    .tabItem { Text(L.string("tab.general")) }
+
                 SafeQuitSettingsTab(settings: $viewModel.settings.safeQuit)
                     .tabItem { Text(L.string("tab.safe_quit")) }
 
@@ -73,6 +79,42 @@ struct SettingsView: View {
             .padding()
         }
         .frame(width: 520, height: 360)
+        .alert(L.string("alert.error.title"), isPresented: Binding(
+            get: { loginItemError != nil },
+            set: { if !$0 { loginItemError = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(loginItemError ?? "")
+        }
+    }
+}
+
+/// 「一般」タブ。ログイン時の自動起動とバージョン表示。
+struct GeneralSettingsTab: View {
+    @ObservedObject var loginItem: LoginItemController
+    @SwiftUI.Binding var errorMessage: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            // ログイン項目はシステム側が source of truth。トグル操作で即時反映する。
+            Toggle(L.string("settings.launch_at_login"), isOn: Binding(
+                get: { loginItem.isEnabled },
+                set: { newValue in
+                    if let message = loginItem.setEnabled(newValue) {
+                        errorMessage = message
+                    }
+                }
+            ))
+
+            Text(L.format("settings.version", UpdateService.currentVersion))
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            Spacer(minLength: 0)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 

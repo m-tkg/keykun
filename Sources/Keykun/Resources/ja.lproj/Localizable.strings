@@ -37,6 +37,12 @@
 /* Tabs */
 "tab.safe_quit" = "安全な Quit";
 "tab.input_switch" = "入力切り替え";
+"tab.general" = "一般";
+
+/* General tab */
+"settings.launch_at_login" = "ログイン時に自動起動";
+"settings.version" = "バージョン %@";
+"login_item.requires_approval" = "「ログイン項目」がシステム設定で無効になっています。システム設定 ＞ 一般 ＞ ログイン項目 で Keykun を許可してください。";
 
 /* Safe Quit tab */
 "safe_quit.enabled" = "⌘Q を2回押さないと終了しないようにする";

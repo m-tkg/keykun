@@ -37,6 +37,12 @@
 /* Tabs */
 "tab.safe_quit" = "Safe Quit";
 "tab.input_switch" = "Input Switch";
+"tab.general" = "General";
+
+/* General tab */
+"settings.launch_at_login" = "Launch at Login";
+"settings.version" = "Version %@";
+"login_item.requires_approval" = "“Login Items” is disabled in System Settings. Allow Keykun under System Settings ＞ General ＞ Login Items.";
 
 /* Safe Quit tab */
 "safe_quit.enabled" = "Require pressing ⌘Q twice to quit";

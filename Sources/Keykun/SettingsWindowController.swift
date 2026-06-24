@@ -8,6 +8,7 @@ import KeykunCore
 final class SettingsWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private let viewModel: SettingsViewModel
+    private let loginItem = LoginItemController()
 
     init(initialSettings: KeykunCore.Settings, onApply: @escaping (KeykunCore.Settings) -> Void) {
         self.viewModel = SettingsViewModel(settings: initialSettings, onApply: onApply)
@@ -15,9 +16,12 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 
     func show() {
+        // 外部（システム設定）で変更された可能性があるため最新状態に同期する。
+        loginItem.refresh()
         if window == nil {
             let rootView = SettingsView(
                 viewModel: viewModel,
+                loginItem: loginItem,
                 onClose: { [weak self] in self?.window?.close() }
             )
             let hosting = NSHostingController(rootView: rootView)
