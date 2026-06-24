@@ -37,16 +37,13 @@ struct SettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
     let onClose: () -> Void
 
-    /// 選択可能な入力ソース一覧（入力切り替えタブで使用）。
-    let inputSources: [InputSourceInfo]
-
     var body: some View {
         VStack(spacing: 0) {
             TabView {
                 SafeQuitSettingsTab(settings: $viewModel.settings.safeQuit)
                     .tabItem { Text(L.string("tab.safe_quit")) }
 
-                InputSwitchSettingsTab(settings: $viewModel.settings.inputSwitch, sources: inputSources)
+                InputSwitchSettingsTab(settings: $viewModel.settings.inputSwitch)
                     .tabItem { Text(L.string("tab.input_switch")) }
                 // 将来のキー機能タブはここに追加する。
             }
@@ -119,10 +116,12 @@ struct SafeQuitSettingsTab: View {
     }
 }
 
-/// 「入力切り替え」タブ。左右 Command の単押しに入力ソースを割り当てる。
+/// 「入力切り替え」タブ。左右 Command の単押しに送出キー（英数/かな）を割り当てる。
 struct InputSwitchSettingsTab: View {
     @SwiftUI.Binding var settings: InputSwitchSettings
-    let sources: [InputSourceInfo]
+
+    /// 単押しとみなす最大押下時間の候補（秒）。
+    private let thresholdOptions: [TimeInterval] = [0.3, 0.5, 0.7, 1.0]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -131,8 +130,21 @@ struct InputSwitchSettingsTab: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            sourcePicker(title: L.string("input_switch.left"), selection: $settings.leftCommandSourceID)
-            sourcePicker(title: L.string("input_switch.right"), selection: $settings.rightCommandSourceID)
+            actionPicker(title: L.string("input_switch.left"), selection: $settings.leftCommandAction)
+            actionPicker(title: L.string("input_switch.right"), selection: $settings.rightCommandAction)
+
+            HStack(alignment: .firstTextBaseline) {
+                Text(L.string("input_switch.threshold"))
+                Spacer(minLength: 12)
+                Picker("", selection: $settings.tapThreshold) {
+                    ForEach(thresholdOptions, id: \.self) { value in
+                        Text(L.format("common.seconds", value)).tag(value)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 110)
+                .disabled(!settings.isEnabled)
+            }
 
             Text(L.string("input_switch.description"))
                 .font(.caption)
@@ -146,19 +158,18 @@ struct InputSwitchSettingsTab: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
-    /// 入力ソース選択 Picker（「なし」＋一覧）。
-    private func sourcePicker(title: String, selection: SwiftUI.Binding<String?>) -> some View {
+    /// 送出キー選択 Picker（なし / 英数 / かな）。
+    private func actionPicker(title: String, selection: SwiftUI.Binding<InputSwitchAction>) -> some View {
         HStack(alignment: .firstTextBaseline) {
             Text(title)
             Spacer(minLength: 12)
             Picker("", selection: selection) {
-                Text(L.string("input_switch.none")).tag(String?.none)
-                ForEach(sources) { source in
-                    Text(source.localizedName).tag(String?.some(source.id))
-                }
+                Text(L.string("input_switch.action.none")).tag(InputSwitchAction.none)
+                Text(L.string("input_switch.action.eisu")).tag(InputSwitchAction.eisu)
+                Text(L.string("input_switch.action.kana")).tag(InputSwitchAction.kana)
             }
             .labelsHidden()
-            .frame(width: 240)
+            .frame(width: 200)
             .disabled(!settings.isEnabled)
         }
     }

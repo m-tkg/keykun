@@ -1,7 +1,35 @@
 /* Menu (StatusBarController) */
 "menu.settings" = "設定…";
 "menu.check_permission" = "アクセシビリティ権限を確認";
+"menu.check_update" = "アップデートを確認…";
+"menu.install_update" = "アップデート %@ をインストール…";
 "menu.quit" = "Keykun を終了";
+
+/* Menu bar */
+"menu_bar.local" = "ローカル";
+
+/* Update flow */
+"update.latest" = "最新版です（v%@）。";
+"update.check_failed" = "アップデートの確認に失敗しました。\n%@";
+"update.available.title" = "新しいバージョン %@ があります";
+"update.available.body" = "現在: v%@\n更新するとアプリを再起動します。";
+"update.button.update" = "更新";
+"update.button.open_release" = "リリースページを開く";
+"update.failed" = "更新に失敗しました。\n%@";
+"alert.error.title" = "エラー";
+
+/* Update service errors */
+"error.fetch_release_http" = "リリース情報の取得に失敗しました（HTTP %d）。";
+"error.parse_release" = "リリース情報の解析に失敗しました。";
+"error.no_zip_asset" = "リリースに zip アセットが見つかりませんでした。";
+"error.download_http" = "ダウンロードに失敗しました（HTTP %d）。";
+
+/* Self-updater errors */
+"error.not_writable" = "アプリの場所に書き込めません: %@。手動での更新が必要です。";
+"error.no_zip" = "リリースに zip が見つかりませんでした。";
+"error.command_failed" = "更新コマンドが失敗しました: %@";
+"error.no_app_in_archive" = "ダウンロードしたアーカイブに .app が見つかりませんでした。";
+"error.bundle_id_mismatch" = "ダウンロードした .app の識別子が一致しませんでした。";
 
 /* Settings window */
 "settings.window.title" = "Keykun 設定";
@@ -17,11 +45,17 @@
 "safe_quit.description" = "⌘Q を1回押すと案内を表示し、猶予時間内にもう一度 ⌘Q を押すと終了します。";
 
 /* Input Switch tab */
-"input_switch.enabled" = "左右の ⌘ 単押しで入力ソースを切り替える";
+"input_switch.enabled" = "左右の ⌘ 単押しで入力モードを切り替える";
 "input_switch.left" = "左 ⌘（単押し）";
 "input_switch.right" = "右 ⌘（単押し）";
-"input_switch.none" = "なし";
-"input_switch.description" = "左右の ⌘ を単独で（他キーと一緒に押さず）押して離すと、割り当てた入力ソースに切り替わります。⌘ は組み合わせ時は通常どおり修飾キーとして機能します。";
+"input_switch.threshold" = "単押しの判定時間";
+"input_switch.action.none" = "なし";
+"input_switch.action.eisu" = "英数キー（英語）";
+"input_switch.action.kana" = "かなキー（日本語）";
+"input_switch.description" = "左右の ⌘ を単独で（他キーと一緒に押さず）押して離すと、英数/かなキーを送って IME のモードを切り替えます（現在の入力ソースに関係なく確実に切り替わります）。⌘ は組み合わせ時は通常どおり修飾キーとして機能します。";
+
+/* Common units */
+"common.seconds" = "%.1f 秒";
 
 /* HUD */
 "hud.press_again" = "もう一度 ⌘Q で終了";

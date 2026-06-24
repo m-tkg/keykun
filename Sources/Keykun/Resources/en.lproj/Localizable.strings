@@ -1,7 +1,35 @@
 /* Menu (StatusBarController) */
 "menu.settings" = "Settings…";
 "menu.check_permission" = "Check Accessibility Permission";
+"menu.check_update" = "Check for Updates…";
+"menu.install_update" = "Install Update %@…";
 "menu.quit" = "Quit Keykun";
+
+/* Menu bar */
+"menu_bar.local" = "Local";
+
+/* Update flow */
+"update.latest" = "You’re up to date (v%@).";
+"update.check_failed" = "Failed to check for updates.\n%@";
+"update.available.title" = "Version %@ is available";
+"update.available.body" = "Current: v%@\nUpdating will restart the app.";
+"update.button.update" = "Update";
+"update.button.open_release" = "Open Release Page";
+"update.failed" = "Update failed.\n%@";
+"alert.error.title" = "Error";
+
+/* Update service errors */
+"error.fetch_release_http" = "Failed to fetch release info (HTTP %d).";
+"error.parse_release" = "Failed to parse release info.";
+"error.no_zip_asset" = "No zip asset found in the release.";
+"error.download_http" = "Download failed (HTTP %d).";
+
+/* Self-updater errors */
+"error.not_writable" = "Cannot write to the app location: %@. A manual update is required.";
+"error.no_zip" = "No zip found in the release.";
+"error.command_failed" = "Update command failed: %@";
+"error.no_app_in_archive" = "No .app was found in the downloaded archive.";
+"error.bundle_id_mismatch" = "The downloaded .app has a mismatched identifier.";
 
 /* Settings window */
 "settings.window.title" = "Keykun Settings";
@@ -17,11 +45,17 @@
 "safe_quit.description" = "Press ⌘Q once to show a reminder; press ⌘Q again within the time window to quit.";
 
 /* Input Switch tab */
-"input_switch.enabled" = "Switch input source with a single ⌘ tap";
+"input_switch.enabled" = "Switch input mode with a single ⌘ tap";
 "input_switch.left" = "Left ⌘ (tap)";
 "input_switch.right" = "Right ⌘ (tap)";
-"input_switch.none" = "None";
-"input_switch.description" = "Tap and release the left/right ⌘ alone (no other keys) to switch to the assigned input source. ⌘ still works as a modifier in combinations.";
+"input_switch.threshold" = "Max single-tap duration";
+"input_switch.action.none" = "None";
+"input_switch.action.eisu" = "Eisu key (English)";
+"input_switch.action.kana" = "Kana key (Japanese)";
+"input_switch.description" = "Tap and release the left/right ⌘ alone (no other keys) to send the Eisu/Kana key, switching the IME mode (works reliably regardless of the current input source). ⌘ still works as a modifier in combinations.";
+
+/* Common units */
+"common.seconds" = "%.1f sec";
 
 /* HUD */
 "hud.press_again" = "Press ⌘Q again to quit";

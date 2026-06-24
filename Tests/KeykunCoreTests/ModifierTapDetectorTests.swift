@@ -54,6 +54,17 @@ final class ModifierTapDetectorTests: XCTestCase {
         XCTAssertEqual(d.commandUp(side: .left, now: 0.15), .left)
     }
 
+    func testResetClearsCandidateSoReleaseDoesNotFire() {
+        var d = ModifierTapDetector(threshold: 0.3)
+        d.commandDown(side: .left, otherModifiersHeld: false, now: 0)
+        // 取りこぼし相当でリセット → 押下中の候補が消え、解放しても発火しない
+        d.reset()
+        XCTAssertNil(d.commandUp(side: .left, now: 0.1))
+        // リセット後の新しい単押しは正常に発火する
+        d.commandDown(side: .right, otherModifiersHeld: false, now: 1.0)
+        XCTAssertEqual(d.commandUp(side: .right, now: 1.1), .right)
+    }
+
     func testConsecutiveSoloTapsEachFire() {
         var d = ModifierTapDetector(threshold: 0.3)
         d.commandDown(side: .left, otherModifiersHeld: false, now: 0)

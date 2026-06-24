@@ -8,16 +8,27 @@ final class StatusBarController: NSObject {
 
     private let openSettings: () -> Void
     private let checkPermission: () -> Void
+    private let checkForUpdate: () -> Void
     private let quitApp: () -> Void
+    private var updateItem: NSMenuItem!
+
+    private static var checkUpdateTitle: String { L.string("menu.check_update") }
+
+    /// ローカル検証ビルド（バンドルID が `.local` で終わる）かどうか。
+    private var isLocalBuild: Bool {
+        (Bundle.main.bundleIdentifier ?? "").hasSuffix(".local")
+    }
 
     init(
         openSettings: @escaping () -> Void,
         checkPermission: @escaping () -> Void,
+        checkForUpdate: @escaping () -> Void,
         quit: @escaping () -> Void
     ) {
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         self.openSettings = openSettings
         self.checkPermission = checkPermission
+        self.checkForUpdate = checkForUpdate
         self.quitApp = quit
         super.init()
 
@@ -29,14 +40,31 @@ final class StatusBarController: NSObject {
             } else {
                 button.title = "⌘"
             }
+            // ローカルビルドは「ローカル」を併記して本番と区別する。
+            if isLocalBuild {
+                button.title = " " + L.string("menu_bar.local")
+                button.imagePosition = .imageLeading
+            }
         }
 
         let menu = NSMenu()
         menu.addItem(menuItem(title: L.string("menu.settings"), action: #selector(handleOpenSettings), key: ","))
         menu.addItem(menuItem(title: L.string("menu.check_permission"), action: #selector(handleCheckPermission), key: ""))
+        updateItem = menuItem(title: Self.checkUpdateTitle, action: #selector(handleCheckForUpdate), key: "")
+        menu.addItem(updateItem)
         menu.addItem(.separator())
         menu.addItem(menuItem(title: L.string("menu.quit"), action: #selector(handleQuit), key: "q"))
         statusItem.menu = menu
+    }
+
+    /// 新バージョンが利用可能なときにメニュー文言を変更する。
+    func setUpdateAvailable(tag: String) {
+        updateItem.title = L.format("menu.install_update", tag)
+    }
+
+    /// 最新（更新なし）状態に戻す。
+    func clearUpdateAvailable() {
+        updateItem.title = Self.checkUpdateTitle
     }
 
     private func menuItem(title: String, action: Selector, key: String) -> NSMenuItem {
@@ -47,6 +75,7 @@ final class StatusBarController: NSObject {
 
     @objc private func handleOpenSettings() { openSettings() }
     @objc private func handleCheckPermission() { checkPermission() }
+    @objc private func handleCheckForUpdate() { checkForUpdate() }
     @objc private func handleQuit() { quitApp() }
 
     /// メニューバー用のテンプレート（モノクロ）画像を返す。

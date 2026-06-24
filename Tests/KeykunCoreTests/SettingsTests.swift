@@ -6,23 +6,31 @@ final class SettingsTests: XCTestCase {
         let s = Settings.default
         XCTAssertTrue(s.safeQuit.isEnabled)
         XCTAssertEqual(s.safeQuit.interval, 1.0, accuracy: 0.0001)
-        // 入力切替は既定で無効・未割り当て（グローバル挙動を変えるため）。
+        // 入力切替は既定で無効。割り当ては左=英数・右=かな（Karabiner 同様の既定）。
         XCTAssertFalse(s.inputSwitch.isEnabled)
-        XCTAssertNil(s.inputSwitch.leftCommandSourceID)
-        XCTAssertNil(s.inputSwitch.rightCommandSourceID)
-        XCTAssertEqual(s.inputSwitch.tapThreshold, 0.3, accuracy: 0.0001)
+        XCTAssertEqual(s.inputSwitch.leftCommandAction, .eisu)
+        XCTAssertEqual(s.inputSwitch.rightCommandAction, .kana)
+        XCTAssertEqual(s.inputSwitch.tapThreshold, 0.5, accuracy: 0.0001)
     }
 
     func testInputSwitchCodableRoundTrip() throws {
         var s = Settings.default
         s.inputSwitch.isEnabled = true
-        s.inputSwitch.leftCommandSourceID = "com.apple.keylayout.ABC"
-        s.inputSwitch.rightCommandSourceID = "com.apple.inputmethod.Kotoeri.Japanese"
+        s.inputSwitch.leftCommandAction = .kana
+        s.inputSwitch.rightCommandAction = .none
         s.inputSwitch.tapThreshold = 0.25
 
         let data = try JSONEncoder().encode(s)
         let decoded = try JSONDecoder().decode(Settings.self, from: data)
         XCTAssertEqual(decoded, s)
+    }
+
+    func testActionForSide() {
+        var s = InputSwitchSettings()
+        s.leftCommandAction = .eisu
+        s.rightCommandAction = .kana
+        XCTAssertEqual(s.action(for: .left), .eisu)
+        XCTAssertEqual(s.action(for: .right), .kana)
     }
 
     func testDecodingOldJSONWithoutInputSwitchFillsDefaults() throws {
@@ -33,7 +41,19 @@ final class SettingsTests: XCTestCase {
         let decoded = try JSONDecoder().decode(Settings.self, from: Data(json.utf8))
         XCTAssertEqual(decoded.safeQuit.interval, 1.5, accuracy: 0.0001)
         XCTAssertFalse(decoded.inputSwitch.isEnabled)
-        XCTAssertNil(decoded.inputSwitch.leftCommandSourceID)
+        XCTAssertEqual(decoded.inputSwitch.leftCommandAction, .eisu)
+    }
+
+    func testDecodingLegacySourceKeysAreIgnored() throws {
+        // 旧方式（leftCommandSourceID 等）の JSON でも、未知キーは無視され既定で補完される。
+        let json = """
+        { "inputSwitch": { "isEnabled": true, "leftCommandSourceID": "com.apple.keylayout.ABC", "tapThreshold": 0.3 } }
+        """
+        let decoded = try JSONDecoder().decode(Settings.self, from: Data(json.utf8))
+        XCTAssertTrue(decoded.inputSwitch.isEnabled)
+        XCTAssertEqual(decoded.inputSwitch.leftCommandAction, .eisu)
+        XCTAssertEqual(decoded.inputSwitch.rightCommandAction, .kana)
+        XCTAssertEqual(decoded.inputSwitch.tapThreshold, 0.3, accuracy: 0.0001)
     }
 
     func testCodableRoundTrip() throws {

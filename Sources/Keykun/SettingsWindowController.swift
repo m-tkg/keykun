@@ -18,8 +18,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         if window == nil {
             let rootView = SettingsView(
                 viewModel: viewModel,
-                onClose: { [weak self] in self?.window?.close() },
-                inputSources: InputSourceService.selectable()
+                onClose: { [weak self] in self?.window?.close() }
             )
             let hosting = NSHostingController(rootView: rootView)
             let window = NSWindow(contentViewController: hosting)

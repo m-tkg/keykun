@@ -2,6 +2,11 @@
 # ビルド成果物を .app バンドルにまとめる。
 # 使い方: bash Scripts/bundle.sh [debug|release]   (既定: release)
 #
+# ローカル検証用ビルド: LOCAL=1 bash Scripts/bundle.sh debug
+#   本番アプリ(com.mtkg.keykun)と TCC 権限が衝突しないよう、バンドルID と表示名を分けた
+#   「Keykun (Local)」を生成する。メニューバーには「ローカル」と併記され本番と区別できる。
+#   システム設定の権限一覧にも本番と別エントリとして並び、独立して許可できる。
+#
 # 署名:
 #   既定では Developer ID Application（team id 指定）で署名する。
 #   安定した署名アイデンティティにすると、再ビルドや更新で .app を入れ替えても
@@ -10,11 +15,22 @@
 #     SIGN_IDENTITY  ... codesign の署名アイデンティティ（既定: Developer ID Application）
 #     TEAM_ID        ... Developer Team ID（既定: G72M73C546）
 #     AD_HOC=1       ... アドホック署名に切り替える（証明書が無い環境向け）
+#     LOCAL=1        ... ローカル検証ビルド（バンドルID/表示名を分離）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG="${1:-release}"
-APP="$ROOT/Keykun.app"
+LOCAL="${LOCAL:-0}"
+
+# ローカル検証ビルドはバンドルID/表示名を分けて本番と権限を分離する。
+if [[ "$LOCAL" == "1" ]]; then
+  APP_NAME="Keykun (Local)"
+  BUNDLE_ID="com.mtkg.keykun.local"
+else
+  APP_NAME="Keykun"
+  BUNDLE_ID="com.mtkg.keykun"
+fi
+APP="$ROOT/$APP_NAME.app"
 
 # 既定の署名設定（Developer Team ID）。
 TEAM_ID="${TEAM_ID:-G72M73C546}"
@@ -30,6 +46,13 @@ mkdir -p "$APP/Contents/MacOS"
 mkdir -p "$APP/Contents/Resources"
 cp "$BIN_DIR/Keykun" "$APP/Contents/MacOS/Keykun"
 cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
+
+# ローカル検証ビルドはバンドルID/表示名を差し替える（CFBundleExecutable は Keykun のまま）。
+if [[ "$LOCAL" == "1" ]]; then
+  /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $BUNDLE_ID" "$APP/Contents/Info.plist"
+  /usr/libexec/PlistBuddy -c "Set :CFBundleName $APP_NAME" "$APP/Contents/Info.plist"
+  /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $APP_NAME" "$APP/Contents/Info.plist"
+fi
 
 # SwiftPM が生成するリソースバンドル（ローカライズ文字列 en/ja を含む）。
 # Localization.swift の `L` が Contents/Resources から解決するため、ここに配置する。

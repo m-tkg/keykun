@@ -9,6 +9,15 @@ protocol KeyEventHandler: AnyObject {
     /// イベントを観測する。イベントを消費（握りつぶす）したい場合は true を返す。
     /// 状態更新のため、消費しない機能でも必ず観測する（戻り値 false）。
     func handle(type: CGEventType, event: CGEvent) -> Bool
+
+    /// タップが無効化・再有効化されイベントを取りこぼした可能性があるときに呼ばれる。
+    /// 観測中の状態（修飾キーの押下状態など）をリセットして固着を防ぐ。
+    func reset()
+}
+
+extension KeyEventHandler {
+    /// 既定では何もしない（状態を持たないハンドラ向け）。
+    func reset() {}
 }
 
 /// CGEventTap を1つだけ生成し、登録された複数のハンドラへイベントを配信する。
@@ -63,7 +72,10 @@ final class KeyEventTap {
     private func route(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         // システムによってタップが無効化された場合は再有効化して素通しする。
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            log.notice("TAP DISABLED (\(type == .tapDisabledByTimeout ? "timeout" : "userInput")) -> re-enable + reset")
             if let eventTap { CGEvent.tapEnable(tap: eventTap, enable: true) }
+            // 無効化中にイベントを取りこぼした可能性があるため、各ハンドラの状態をリセットする。
+            handlers.forEach { $0.reset() }
             return Unmanaged.passUnretained(event)
         }
 

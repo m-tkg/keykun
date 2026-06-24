@@ -53,4 +53,9 @@ public struct ModifierTapDetector {
     public mutating func contaminate() {
         candidate?.isValid = false
     }
+
+    /// 候補をクリアする（イベント取りこぼし後の状態固着を防ぐため）。
+    public mutating func reset() {
+        candidate = nil
+    }
 }

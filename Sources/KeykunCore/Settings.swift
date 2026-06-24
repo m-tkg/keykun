@@ -61,33 +61,44 @@ public struct SafeQuitSettings: Codable, Equatable {
     }
 }
 
-/// 「入力切り替え」機能の設定。左右 Command の単押しに、それぞれ入力ソースを割り当てる。
+/// 左右 Command 単押し時に送出するキー（Karabiner 方式）。
+/// 入力ソース選択ではなく、英数/かなキーの信号を送って IME のモードを切り替える。
+public enum InputSwitchAction: String, Codable, Equatable, CaseIterable {
+    /// 何もしない。
+    case none
+    /// 「英数」キー（英語入力へ）。
+    case eisu
+    /// 「かな」キー（日本語入力へ）。
+    case kana
+}
+
+/// 「入力切り替え」機能の設定。左右 Command の単押しに、それぞれ送出キー（英数/かな）を割り当てる。
 public struct InputSwitchSettings: Codable, Equatable {
     /// 機能の有効/無効。
     public var isEnabled: Bool
-    /// 左 Command 単押しで切り替える入力ソース ID（未割り当ては nil）。
-    public var leftCommandSourceID: String?
-    /// 右 Command 単押しで切り替える入力ソース ID（未割り当ては nil）。
-    public var rightCommandSourceID: String?
+    /// 左 Command 単押しで送出するキー。
+    public var leftCommandAction: InputSwitchAction
+    /// 右 Command 単押しで送出するキー。
+    public var rightCommandAction: InputSwitchAction
     /// 単押しとみなす最大押下時間（秒）。
     public var tapThreshold: TimeInterval
 
     public init(
         isEnabled: Bool = false,
-        leftCommandSourceID: String? = nil,
-        rightCommandSourceID: String? = nil,
-        tapThreshold: TimeInterval = 0.3
+        leftCommandAction: InputSwitchAction = .eisu,
+        rightCommandAction: InputSwitchAction = .kana,
+        tapThreshold: TimeInterval = 0.5
     ) {
         self.isEnabled = isEnabled
-        self.leftCommandSourceID = leftCommandSourceID
-        self.rightCommandSourceID = rightCommandSourceID
+        self.leftCommandAction = leftCommandAction
+        self.rightCommandAction = rightCommandAction
         self.tapThreshold = tapThreshold
     }
 
     private enum CodingKeys: String, CodingKey {
         case isEnabled
-        case leftCommandSourceID
-        case rightCommandSourceID
+        case leftCommandAction
+        case rightCommandAction
         case tapThreshold
     }
 
@@ -96,17 +107,19 @@ public struct InputSwitchSettings: Codable, Equatable {
         let defaults = InputSwitchSettings()
         self.isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled)
             ?? defaults.isEnabled
-        self.leftCommandSourceID = try container.decodeIfPresent(String.self, forKey: .leftCommandSourceID)
-        self.rightCommandSourceID = try container.decodeIfPresent(String.self, forKey: .rightCommandSourceID)
+        self.leftCommandAction = try container.decodeIfPresent(InputSwitchAction.self, forKey: .leftCommandAction)
+            ?? defaults.leftCommandAction
+        self.rightCommandAction = try container.decodeIfPresent(InputSwitchAction.self, forKey: .rightCommandAction)
+            ?? defaults.rightCommandAction
         self.tapThreshold = try container.decodeIfPresent(TimeInterval.self, forKey: .tapThreshold)
             ?? defaults.tapThreshold
     }
 
-    /// 指定サイドに割り当てられた入力ソース ID。
-    public func sourceID(for side: ModifierSide) -> String? {
+    /// 指定サイドに割り当てられた送出キー。
+    public func action(for side: ModifierSide) -> InputSwitchAction {
         switch side {
-        case .left: return leftCommandSourceID
-        case .right: return rightCommandSourceID
+        case .left: return leftCommandAction
+        case .right: return rightCommandAction
         }
     }
 }

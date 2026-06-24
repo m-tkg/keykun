@@ -1,7 +1,7 @@
 import AppKit
 import KeykunCore
 
-/// 「入力切り替え」: 左右 Command の単押しで入力ソースを切り替えるイベントハンドラ。
+/// 「入力切り替え」: 左右 Command の単押しで英数/かなキーを送出するイベントハンドラ。
 ///
 /// 判定の核は純粋ロジック `ModifierTapDetector` に委ね、本クラスは
 ///   - flagsChanged から左右⌘の押下/解放を device 依存ビットで判定
@@ -76,7 +76,23 @@ final class InputSwitchHandler: KeyEventHandler {
     }
 
     private func fire(_ side: ModifierSide) {
-        guard let id = settings.sourceID(for: side) else { return }
-        InputSourceService.select(id: id)
+        let keyCode: CGKeyCode
+        switch settings.action(for: side) {
+        case .none: return
+        case .eisu: keyCode = InputModeKey.eisu
+        case .kana: keyCode = InputModeKey.kana
+        }
+        // イベントタップのコールバック内で再入的に post しないよう、復帰後に送出する。
+        // キー送出は軽量なので main で問題ない。
+        DispatchQueue.main.async {
+            InputModeKey.post(keyCode)
+        }
+    }
+
+    /// イベント取りこぼし（タップ無効化）後に状態が固着しないよう、観測状態をリセットする。
+    func reset() {
+        leftDown = false
+        rightDown = false
+        detector.reset()
     }
 }
