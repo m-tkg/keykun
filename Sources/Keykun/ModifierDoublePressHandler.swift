@@ -86,15 +86,22 @@ final class ModifierDoublePressHandler: KeyEventHandler {
     }
 
     private func launch(_ app: AppTarget?) {
-        guard let app, app.isAssigned,
-              let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: app.bundleIdentifier)
-        else { return }
-        // イベントタップのコールバック内で再入的に重い処理を行わないよう、復帰後に起動する。
+        guard let app, app.isAssigned else { return }
+        let bundleID = app.bundleIdentifier
+        // イベントタップのコールバック内で再入的に重い処理を行わないよう、復帰後に実行する。
         DispatchQueue.main.async { [log] in
+            // 既に最前面のアプリなら隠す（押すたびに前面化↔退避するトグル）。
+            if let frontmost = NSWorkspace.shared.frontmostApplication,
+               frontmost.bundleIdentifier == bundleID {
+                frontmost.hide()
+                return
+            }
+            // それ以外は起動／前面化する。
+            guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return }
             let configuration = NSWorkspace.OpenConfiguration()
             NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, error in
                 if let error {
-                    log.error("Failed to launch \(app.bundleIdentifier, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                    log.error("Failed to launch \(bundleID, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
             }
         }
