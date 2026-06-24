@@ -38,6 +38,7 @@
 /* Tabs */
 "tab.safe_quit" = "安全な Quit";
 "tab.input_switch" = "入力切り替え";
+"tab.modifier_launch" = "アプリ起動";
 "tab.general" = "一般";
 
 /* General tab */
@@ -60,6 +61,19 @@
 "input_switch.action.eisu" = "英数キー（英語）";
 "input_switch.action.kana" = "かなキー（日本語）";
 "input_switch.description" = "左右の ⌘ を単独で（他キーと一緒に押さず）押して離すと、英数/かなキーを送って IME のモードを切り替えます（現在の入力ソースに関係なく確実に切り替わります）。⌘ は組み合わせ時は通常どおり修飾キーとして機能します。";
+
+/* Launch App tab (modifier double-tap) */
+"modifier_launch.enabled" = "修飾キーの二度押しでアプリを起動する";
+"modifier_launch.modifier.command" = "⌘ Command";
+"modifier_launch.modifier.option" = "⌥ Option";
+"modifier_launch.modifier.control" = "⌃ Control";
+"modifier_launch.modifier.shift" = "⇧ Shift";
+"modifier_launch.side.left" = "左";
+"modifier_launch.side.right" = "右";
+"modifier_launch.add" = "追加";
+"modifier_launch.choose_app" = "アプリを選択…";
+"modifier_launch.conflict" = "⌘ は「入力切り替え」で使用中です。どちらか一方のみ有効にできます。";
+"modifier_launch.description" = "修飾キー種別と左右を選び、単独で（他キーと一緒に押さず）2回押して離すと、割り当てたアプリを起動します。＋で割り当てを追加、－で削除できます。入力切り替えとは別のキーにすると競合しません。";
 
 /* Common units */
 "common.seconds" = "%.1f 秒";

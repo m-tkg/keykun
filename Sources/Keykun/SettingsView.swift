@@ -1,4 +1,6 @@
 import SwiftUI
+import AppKit
+import UniformTypeIdentifiers
 import KeykunCore
 
 /// 設定ダイアログの編集状態。編集は作業コピー上で行い、Apply/OK で確定する。
@@ -51,6 +53,12 @@ struct SettingsView: View {
 
                 InputSwitchSettingsTab(settings: $viewModel.settings.inputSwitch)
                     .tabItem { Text(L.string("tab.input_switch")) }
+
+                ModifierLaunchSettingsTab(
+                    settings: $viewModel.settings.modifierDoublePress,
+                    hasConflict: viewModel.settings.hasModifierConflict
+                )
+                .tabItem { Text(L.string("tab.modifier_launch")) }
                 // 将来のキー機能タブはここに追加する。
             }
             .padding()
@@ -68,17 +76,19 @@ struct SettingsView: View {
                 Button(L.string("button.apply")) {
                     viewModel.apply()
                 }
-                .disabled(!viewModel.hasChanges)
+                // 衝突状態（同じ⌘に入力切替と二度押し起動）のままでは保存させない。
+                .disabled(!viewModel.hasChanges || viewModel.settings.hasModifierConflict)
 
                 Button(L.string("button.ok")) {
                     viewModel.apply()
                     onClose()
                 }
                 .keyboardShortcut(.defaultAction)
+                .disabled(viewModel.settings.hasModifierConflict)
             }
             .padding()
         }
-        .frame(width: 520, height: 360)
+        .frame(width: 520, height: 420)
         .alert(L.string("alert.error.title"), isPresented: Binding(
             get: { loginItemError != nil },
             set: { if !$0 { loginItemError = nil } }
@@ -214,5 +224,115 @@ struct InputSwitchSettingsTab: View {
             .frame(width: 200)
             .disabled(!settings.isEnabled)
         }
+    }
+}
+
+/// 「二度押しでアプリ起動」タブ。(修飾キー, 左右) ごとに起動アプリを割り当てる行を、
+/// ＋/－ で複数追加・削除できる。
+struct ModifierLaunchSettingsTab: View {
+    @SwiftUI.Binding var settings: ModifierDoublePressSettings
+    /// 入力切替（⌘単押し）と⌘で競合しているか。
+    let hasConflict: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Toggle(isOn: $settings.isEnabled) {
+                Text(L.string("modifier_launch.enabled"))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            // 衝突時は警告し、保存は Apply/OK 側で無効化する。
+            if hasConflict {
+                Text(L.string("modifier_launch.conflict"))
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            // 割り当て行のリスト。
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach($settings.bindings) { $binding in
+                    bindingRow($binding)
+                }
+                Button(action: addBinding) {
+                    Label(L.string("modifier_launch.add"), systemImage: "plus")
+                }
+                .disabled(!settings.isEnabled)
+            }
+
+            Text(L.string("modifier_launch.description"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    /// 1 行ぶんの割り当て: 修飾キー種別 / 左右 / アプリ選択 / 削除（－）。
+    private func bindingRow(_ binding: SwiftUI.Binding<ModifierLaunchBinding>) -> some View {
+        HStack(spacing: 8) {
+            Picker("", selection: binding.modifier) {
+                Text(L.string("modifier_launch.modifier.command")).tag(TargetModifier.command)
+                Text(L.string("modifier_launch.modifier.option")).tag(TargetModifier.option)
+                Text(L.string("modifier_launch.modifier.control")).tag(TargetModifier.control)
+                Text(L.string("modifier_launch.modifier.shift")).tag(TargetModifier.shift)
+            }
+            .labelsHidden()
+            .frame(width: 120)
+
+            Picker("", selection: binding.side) {
+                Text(L.string("modifier_launch.side.left")).tag(ModifierSide.left)
+                Text(L.string("modifier_launch.side.right")).tag(ModifierSide.right)
+            }
+            .labelsHidden()
+            .frame(width: 80)
+
+            Button {
+                chooseApp(into: binding.app)
+            } label: {
+                Text(binding.wrappedValue.app.isAssigned
+                     ? binding.wrappedValue.app.displayName
+                     : L.string("modifier_launch.choose_app"))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(maxWidth: .infinity)
+
+            Button {
+                removeBinding(id: binding.wrappedValue.id)
+            } label: {
+                Image(systemName: "minus")
+            }
+        }
+        .disabled(!settings.isEnabled)
+    }
+
+    private func addBinding() {
+        settings.bindings.append(ModifierLaunchBinding())
+    }
+
+    private func removeBinding(id: UUID) {
+        settings.bindings.removeAll { $0.id == id }
+    }
+
+    /// /Applications を起点に .app を選ばせ、bundle identifier と表示名を取り込む。
+    private func chooseApp(into app: SwiftUI.Binding<AppTarget>) {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.application]
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        guard panel.runModal() == .OK, let url = panel.url,
+              let bundle = Bundle(url: url), let bundleID = bundle.bundleIdentifier
+        else { return }
+        let name = FileManager.default.displayName(atPath: url.path)
+        app.wrappedValue = AppTarget(bundleIdentifier: bundleID, displayName: name)
     }
 }
