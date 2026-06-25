@@ -33,12 +33,8 @@ final class ModifierDoublePressHandler: KeyEventHandler {
     /// 設定を反映する。
     func update(_ settings: ModifierDoublePressSettings) {
         self.settings = settings
-        // アプリ割り当て済みのキーだけを監視（重複除去）。
-        var seen = Set<ModifierKey>()
-        watchedKeys = settings.bindings
-            .filter { $0.app.isAssigned }
-            .map { $0.key }
-            .filter { seen.insert($0).inserted }
+        // アプリ割り当て済みのキーだけを監視（`.both` の左右展開・重複除去はコア側で実施）。
+        watchedKeys = settings.watchedKeys
         // 監視対象が変わると押下状態の意味が変わるため、観測状態をリセットする。
         reset()
     }

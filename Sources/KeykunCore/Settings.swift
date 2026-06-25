@@ -221,21 +221,32 @@ public struct ModifierKey: Hashable, Codable {
     }
 }
 
+/// 割り当てが反応する左右。物理キー識別子（`ModifierSide`）と異なり「両方（どちらでも）」を持つ。
+///
+/// `ModifierSide` に `.both` を足すと `ModifierKey.deviceBit` が「存在しない両方ビット」を扱う羽目になるため、
+/// 割り当て専用の別 enum として分離する。`.both` はハンドラに渡る前に左右2つの `ModifierKey` へ展開する。
+/// raw value は旧 JSON 互換のため `ModifierSide` と一致させる（`"left"`/`"right"`）。
+public enum LaunchSide: String, Codable, Equatable, CaseIterable {
+    case left
+    case right
+    case both
+}
+
 /// 「特定の物理修飾キーの二度押し → アプリ起動」を1件表す割り当て。
 public struct ModifierLaunchBinding: Codable, Equatable, Identifiable {
     /// SwiftUI のリスト識別用 ID（永続化もされる）。
     public var id: UUID
     /// 対象の修飾キー種別。
     public var modifier: TargetModifier
-    /// 対象の左右。
-    public var side: ModifierSide
+    /// 反応する左右（`.both` は左右どちらの二度押しでも発火）。
+    public var side: LaunchSide
     /// 起動するアプリ。
     public var app: AppTarget
 
     public init(
         id: UUID = UUID(),
         modifier: TargetModifier = .command,
-        side: ModifierSide = .left,
+        side: LaunchSide = .left,
         app: AppTarget = AppTarget()
     ) {
         self.id = id
@@ -244,8 +255,10 @@ public struct ModifierLaunchBinding: Codable, Equatable, Identifiable {
         self.app = app
     }
 
-    /// 検知に使う物理キー。
-    public var key: ModifierKey { ModifierKey(modifier: modifier, side: side) }
+    /// この割り当てが指定の物理キーに反応するか。`.both` は左右どちらにも反応する。
+    public func matches(_ key: ModifierKey) -> Bool {
+        modifier == key.modifier && (side == .both || side.rawValue == key.side.rawValue)
+    }
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -260,7 +273,7 @@ public struct ModifierLaunchBinding: Codable, Equatable, Identifiable {
         self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
         self.modifier = try container.decodeIfPresent(TargetModifier.self, forKey: .modifier)
             ?? defaults.modifier
-        self.side = try container.decodeIfPresent(ModifierSide.self, forKey: .side)
+        self.side = try container.decodeIfPresent(LaunchSide.self, forKey: .side)
             ?? defaults.side
         self.app = try container.decodeIfPresent(AppTarget.self, forKey: .app)
             ?? defaults.app
@@ -310,7 +323,26 @@ public struct ModifierDoublePressSettings: Codable, Equatable {
 
     /// 指定した物理キーに割り当てられた、アプリが設定済みの起動対象。無ければ nil。
     public func app(for key: ModifierKey) -> AppTarget? {
-        bindings.first { $0.key == key && $0.app.isAssigned }?.app
+        bindings.first { $0.matches(key) && $0.app.isAssigned }?.app
+    }
+
+    /// 監視対象（アプリ割り当て済み）の物理キー一覧。`.both` は左右 2 キーへ展開し、重複は除く。
+    public var watchedKeys: [ModifierKey] {
+        var seen = Set<ModifierKey>()
+        var result: [ModifierKey] = []
+        for binding in bindings where binding.app.isAssigned {
+            let sides: [ModifierSide]
+            switch binding.side {
+            case .left: sides = [.left]
+            case .right: sides = [.right]
+            case .both: sides = [.left, .right]
+            }
+            for side in sides {
+                let key = ModifierKey(modifier: binding.modifier, side: side)
+                if seen.insert(key).inserted { result.append(key) }
+            }
+        }
+        return result
     }
 
     /// いずれかの割り当てが ⌘ を対象にしているか（入力切替との衝突判定に使う）。
