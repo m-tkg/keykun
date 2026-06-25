@@ -46,7 +46,122 @@ final class ModifierDoublePressSettingsTests: XCTestCase {
         XCTAssertTrue(AppTarget(bundleIdentifier: "com.apple.Terminal", displayName: "Terminal").isAssigned)
     }
 
+    // MARK: - LaunchSide
+
+    func testLaunchSideRawValuesMatchModifierSide() {
+        // 旧 JSON 互換のため raw value は "left"/"right" を維持する。
+        XCTAssertEqual(LaunchSide.left.rawValue, "left")
+        XCTAssertEqual(LaunchSide.right.rawValue, "right")
+        XCTAssertEqual(LaunchSide.both.rawValue, "both")
+        XCTAssertEqual(LaunchSide.allCases, [.left, .right, .both])
+    }
+
+    func testLaunchSideCodableRoundTrip() throws {
+        for side in LaunchSide.allCases {
+            let data = try JSONEncoder().encode(side)
+            let decoded = try JSONDecoder().decode(LaunchSide.self, from: data)
+            XCTAssertEqual(decoded, side)
+        }
+    }
+
+    func testBindingDecodesOldSideValues() throws {
+        // 旧 JSON（"left"/"right"）が LaunchSide にデコードできる。
+        let json = """
+        { "modifier": "command", "side": "right", "app": { "bundleIdentifier": "com.apple.Safari", "displayName": "Safari" } }
+        """
+        let decoded = try JSONDecoder().decode(ModifierLaunchBinding.self, from: Data(json.utf8))
+        XCTAssertEqual(decoded.side, .right)
+    }
+
+    func testBindingDecodesBothSide() throws {
+        let json = """
+        { "modifier": "command", "side": "both", "app": { "bundleIdentifier": "com.apple.Safari", "displayName": "Safari" } }
+        """
+        let decoded = try JSONDecoder().decode(ModifierLaunchBinding.self, from: Data(json.utf8))
+        XCTAssertEqual(decoded.side, .both)
+    }
+
+    func testBindingDefaultsSideToLeftWhenMissing() throws {
+        let json = """
+        { "modifier": "command", "app": { "bundleIdentifier": "com.apple.Safari", "displayName": "Safari" } }
+        """
+        let decoded = try JSONDecoder().decode(ModifierLaunchBinding.self, from: Data(json.utf8))
+        XCTAssertEqual(decoded.side, .left)
+    }
+
+    // MARK: - matches
+
+    func testMatchesLeftBindingOnlyMatchesLeftKey() {
+        let b = ModifierLaunchBinding(modifier: .command, side: .left)
+        XCTAssertTrue(b.matches(ModifierKey(modifier: .command, side: .left)))
+        XCTAssertFalse(b.matches(ModifierKey(modifier: .command, side: .right)))
+        XCTAssertFalse(b.matches(ModifierKey(modifier: .option, side: .left)))
+    }
+
+    func testMatchesRightBindingOnlyMatchesRightKey() {
+        let b = ModifierLaunchBinding(modifier: .option, side: .right)
+        XCTAssertTrue(b.matches(ModifierKey(modifier: .option, side: .right)))
+        XCTAssertFalse(b.matches(ModifierKey(modifier: .option, side: .left)))
+    }
+
+    func testMatchesBothBindingMatchesEitherSide() {
+        let b = ModifierLaunchBinding(modifier: .command, side: .both)
+        XCTAssertTrue(b.matches(ModifierKey(modifier: .command, side: .left)))
+        XCTAssertTrue(b.matches(ModifierKey(modifier: .command, side: .right)))
+        XCTAssertFalse(b.matches(ModifierKey(modifier: .option, side: .left)))
+    }
+
+    // MARK: - watchedKeys
+
+    func testWatchedKeysExpandsBothToBothSides() {
+        var s = ModifierDoublePressSettings()
+        s.bindings = [
+            ModifierLaunchBinding(modifier: .command, side: .both,
+                                  app: AppTarget(bundleIdentifier: "com.apple.Terminal", displayName: "Terminal")),
+        ]
+        XCTAssertEqual(Set(s.watchedKeys), [
+            ModifierKey(modifier: .command, side: .left),
+            ModifierKey(modifier: .command, side: .right),
+        ])
+    }
+
+    func testWatchedKeysDeduplicatesOverlappingBindings() {
+        var s = ModifierDoublePressSettings()
+        s.bindings = [
+            ModifierLaunchBinding(modifier: .command, side: .both,
+                                  app: AppTarget(bundleIdentifier: "com.apple.Terminal", displayName: "Terminal")),
+            ModifierLaunchBinding(modifier: .command, side: .left,
+                                  app: AppTarget(bundleIdentifier: "com.apple.Safari", displayName: "Safari")),
+        ]
+        // .both の左右 2 件と .left が重なり、重複は除去されて 2 キー。
+        XCTAssertEqual(Set(s.watchedKeys), [
+            ModifierKey(modifier: .command, side: .left),
+            ModifierKey(modifier: .command, side: .right),
+        ])
+        XCTAssertEqual(s.watchedKeys.count, 2)
+    }
+
+    func testWatchedKeysExcludesUnassignedBindings() {
+        var s = ModifierDoublePressSettings()
+        s.bindings = [
+            ModifierLaunchBinding(modifier: .command, side: .both, app: AppTarget()),
+            ModifierLaunchBinding(modifier: .option, side: .left,
+                                  app: AppTarget(bundleIdentifier: "com.apple.Safari", displayName: "Safari")),
+        ]
+        XCTAssertEqual(s.watchedKeys, [ModifierKey(modifier: .option, side: .left)])
+    }
+
     // MARK: - app(for:)
+
+    func testAppForBothBindingReturnsSameAppForEitherSide() {
+        var s = ModifierDoublePressSettings()
+        s.bindings = [
+            ModifierLaunchBinding(modifier: .command, side: .both,
+                                  app: AppTarget(bundleIdentifier: "com.apple.Terminal", displayName: "Terminal")),
+        ]
+        XCTAssertEqual(s.app(for: ModifierKey(modifier: .command, side: .left))?.bundleIdentifier, "com.apple.Terminal")
+        XCTAssertEqual(s.app(for: ModifierKey(modifier: .command, side: .right))?.bundleIdentifier, "com.apple.Terminal")
+    }
 
     func testAppForKeyReturnsAssignedBinding() {
         var s = ModifierDoublePressSettings()
@@ -125,6 +240,17 @@ final class ModifierDoublePressSettingsTests: XCTestCase {
         s.modifierDoublePress.bindings = [
             ModifierLaunchBinding(modifier: .option, side: .left),
             ModifierLaunchBinding(modifier: .command, side: .right),
+        ]
+        XCTAssertTrue(s.hasModifierConflict)
+    }
+
+    func testConflictWhenBothSideBindingUsesCommand() {
+        // side が .both（⌘）でも入力切替と衝突検知する。
+        var s = Settings.default
+        s.inputSwitch.isEnabled = true
+        s.modifierDoublePress.isEnabled = true
+        s.modifierDoublePress.bindings = [
+            ModifierLaunchBinding(modifier: .command, side: .both),
         ]
         XCTAssertTrue(s.hasModifierConflict)
     }
