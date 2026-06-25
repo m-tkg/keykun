@@ -70,10 +70,11 @@
 "modifier_launch.modifier.shift" = "⇧ Shift";
 "modifier_launch.side.left" = "Left";
 "modifier_launch.side.right" = "Right";
+"modifier_launch.side.both" = "Both";
 "modifier_launch.add" = "Add";
 "modifier_launch.choose_app" = "Choose app…";
 "modifier_launch.conflict" = "⌘ is already used by Input Switch. Only one of them can be enabled at a time.";
-"modifier_launch.description" = "Tap and release the chosen modifier key alone twice (no other keys) to launch the assigned app. If that app is already frontmost, it is hidden instead (toggle). Use a different key from Input Switch to avoid conflicts. The key still works normally in combinations.";
+"modifier_launch.description" = "Tap and release the chosen modifier key alone twice (no other keys) to launch the assigned app. With “Both”, double-tapping either the left or right key launches it (left and right are tracked separately, so a left-then-right mix does not count). If that app is already frontmost, it is hidden instead (toggle). Use a different key from Input Switch to avoid conflicts. The key still works normally in combinations.";
 
 /* Common units */
 "common.seconds" = "%.1f sec";

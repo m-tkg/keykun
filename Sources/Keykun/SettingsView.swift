@@ -286,11 +286,12 @@ struct ModifierLaunchSettingsTab: View {
             .frame(width: 120)
 
             Picker("", selection: binding.side) {
-                Text(L.string("modifier_launch.side.left")).tag(ModifierSide.left)
-                Text(L.string("modifier_launch.side.right")).tag(ModifierSide.right)
+                Text(L.string("modifier_launch.side.left")).tag(LaunchSide.left)
+                Text(L.string("modifier_launch.side.right")).tag(LaunchSide.right)
+                Text(L.string("modifier_launch.side.both")).tag(LaunchSide.both)
             }
             .labelsHidden()
-            .frame(width: 80)
+            .frame(width: 100)
 
             Button {
                 chooseApp(into: binding.app)
