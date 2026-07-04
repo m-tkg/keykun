@@ -13,8 +13,9 @@
   （`gh pr view <番号> --json state,mergedAt`）。マージ済みの場合、その PR の作業ブランチへ push しても
   main には反映されない（孤立コミットになる）。マージ済みなら**最新 `main` から新しいブランチを切り直し**、
   必要な修正と（リリースが要るなら）バージョン更新を入れて別 PR を出す。
-- リリース用 Actions は `push: branches: [main]` で発火し main への push がそのままリリースに直結するため、
-  事故防止のためにも main 直 push を避ける。
+- リリース用 Actions は `v*` タグの push で発火する（`push: tags: ["v*"]`）。main へのマージだけでは
+  リリースされない。Info.plist の `CFBundleShortVersionString` を上げて main にマージした後、
+  `make release-tag` を実行して初めてタグが作成・push されビルド・署名・公証・リリース作成が走る。
 
 ## プロジェクト概要
 
