@@ -1,6 +1,6 @@
 import AppKit
 import OSLog
-import KeykunCore
+import KunUpdateKit
 
 private let logger = Logger(subsystem: "com.mtkg.keykun", category: "SelfUpdater")
 

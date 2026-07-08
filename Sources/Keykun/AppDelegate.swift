@@ -2,6 +2,7 @@ import AppKit
 import OSLog
 import KeykunCore
 import KunIntegrationBridge
+import KunUpdateKit
 
 private let log = Logger(subsystem: "com.mtkg.keykun", category: "app")
 
@@ -27,8 +28,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let updateService = UpdateService()
     private lazy var selfUpdater = SelfUpdater(service: updateService)
     private var availableRelease: ReleaseInfo?
-    /// 定期的なアップデート監視の間隔（1時間）。GitHub 未認証 API のレート制限（60回/時）に十分余裕。
-    private let updateCheckInterval: TimeInterval = 60 * 60
     private var updateTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -129,10 +128,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// アップデートを定期的に監視する。Timer はスリープ中は発火しないため、
     /// `NSWorkspace.didWakeNotification` を購読してスリープ復帰時にも即チェックする。
     private func scheduleUpdateChecks() {
-        let timer = Timer.scheduledTimer(withTimeInterval: updateCheckInterval, repeats: true) { [weak self] _ in
+        let timer = Timer.scheduledTimer(
+            withTimeInterval: KunUpdateSchedule.checkInterval, repeats: true
+        ) { [weak self] _ in
             MainActor.assumeIsolated { self?.startUpdateCheck(interactive: false) }
         }
-        timer.tolerance = updateCheckInterval * 0.1  // 省電力のためコアレッシングを許可。
+        timer.tolerance = KunUpdateSchedule.checkIntervalTolerance  // 省電力のためコアレッシングを許可。
         updateTimer = timer
 
         NSWorkspace.shared.notificationCenter.addObserver(
