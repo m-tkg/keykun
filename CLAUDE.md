@@ -193,3 +193,9 @@ GUI に表示する文字列は **日本語・英語の 2 言語に対応**し�
   メニュー文言の変化（v4）は `statusBar.onMenuContentChanged` → `bridge.exportMenuSnapshot()`（表示中は自動保留）。
 - 仕様: kuntraykun リポジトリ `docs/kun-integration-protocol.md`、共通方針は `../CLAUDE_base.md`「Kuntraykun 連携」。
 - 管理対象フラグは kunkit が `UserDefaults`（キー `KuntraykunManaged`）に永続化する。
+- **kunkit の更新運用**: 連携プロトコルの変更・修正は kunkit 側（TDD）で行って semver タグを発行し、
+  各アプリは `swift package update kunkit` で追従する（`from: "1.0.0"` 指定のため 1.x は自動追従、
+  破壊的変更はメジャーを上げる）。本リポジトリは `Package.resolved` を非追跡（CI ビルドが最新 1.x を解決する）。
+- **連携のデバッグ**: まず `~/Library/Application Support/Kuntraykun/Menus/<基底ID>.json` の中身
+  （空なら書き出し側の問題）と、Console の subsystem `com.mtkg.keykun` / category `kuntraykun` の
+  ログを確認する。
