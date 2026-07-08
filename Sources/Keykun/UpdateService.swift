@@ -1,7 +1,6 @@
 import Foundation
 import OSLog
 import KunUpdateKit
-import KeykunCore
 
 private let log = Logger(subsystem: "com.mtkg.keykun", category: "update")
 
