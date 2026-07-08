@@ -56,7 +56,6 @@ Sources/
     DoublePressDecider.swift   ⌘Q 二度押し判定の状態機械
     ModifierTapDetector.swift  左右⌘の単押し検知
     Settings.swift             設定モデル（機能ごとにサブ構造体）
-    SettingsStore.swift        JSON 永続化
   Keykun/                   アプリ本体
     main.swift / AppDelegate.swift
     KeyEventTap.swift           CGEventTap を共有し各ハンドラへ配信
@@ -69,7 +68,7 @@ Sources/
     HUDController.swift
     Localization.swift          L ヘルパー
     Resources/{en,ja}.lproj/Localizable.strings
-Tests/KeykunCoreTests/      DoublePressDecider / ModifierTapDetector / Settings / SettingsStore のテスト
+Tests/KeykunCoreTests/      DoublePressDecider / ModifierTapDetector / Settings のテスト
 Resources/Info.plist        バンドル情報（LSUIElement で Dock 非表示）
 Scripts/bundle.sh           .app 生成 + 署名
 ```
