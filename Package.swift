@@ -23,6 +23,7 @@ let package = Package(
             dependencies: [
                 "KeykunCore",
                 .product(name: "KunIntegrationBridge", package: "kunkit"),
+                .product(name: "KunUpdateKit", package: "kunkit"),
             ],
             // en.lproj / ja.lproj の Localizable.strings をリソースバンドルに含める。
             resources: [
