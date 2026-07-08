@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
+import KunAppKit
 import KeykunCore
 
 /// 設定ダイアログの編集状態。編集は作業コピー上で行い、Apply/OK で確定する。

@@ -1,7 +1,9 @@
 import AppKit
 import OSLog
 import KeykunCore
+import KunAppKit
 import KunIntegrationBridge
+import KunSupport
 import KunUpdateKit
 
 private let log = Logger(subsystem: "com.mtkg.keykun", category: "app")
@@ -10,7 +12,8 @@ private let log = Logger(subsystem: "com.mtkg.keykun", category: "app")
 /// アクセシビリティ権限の取得を担う。
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let store = SettingsStore(url: SettingsStore.defaultURL())
+    private let store = KunSettingsStore<Settings>(
+        url: KunSettingsStore<Settings>.defaultURL(appFolderName: "Keykun"), defaultValue: .default)
 
     // 共有イベントタップと各機能ハンドラ。
     private let eventTap = KeyEventTap()
@@ -26,7 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // アップデート関連。
     private let updateService = UpdateService()
-    private lazy var selfUpdater = SelfUpdater(service: updateService)
+    private let selfUpdater = SelfUpdater(appName: "Keykun")
     private var availableRelease: ReleaseInfo?
     private var updateTimer: Timer?
 
