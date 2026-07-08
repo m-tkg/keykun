@@ -192,3 +192,10 @@ GUI に表示する文字列は **日本語・英語の 2 言語に対応**し�
   `StatusBarController` がメニューバーアイコンを設定する箇所で現在アイコンを
   `~/Library/Application Support/Kuntraykun/MenuBarIcons/<基底ID>.png` に書き出す（テンプレートは `.template` マーカー併記）。
   kuntraykun はこれを優先して一覧に表示する。
+- **メニュースナップショットの共有（v4）**: `KuntraykunMenuExport.export(_:)`（`Sources/Keykun/KuntraykunMenuExport.swift`）で、
+  自分のステータスメニュー構造を JSON で `~/Library/Application Support/Kuntraykun/Menus/<基底ID>.json` に
+  原子的に書き出し、`menuSnapshot` 分散通知で知らせる。kuntraykun はこれを一覧のサブメニューとして表示し、
+  項目クリックを `invokeMenuItem` で依頼してくる（`KuntraykunBridge` が `requestMenu` / `invokeMenuItem` を観測、
+  実行はインデックスパス ID で `performActionForItem(at:)`）。書き出しは起動時・requestMenu 受信時・
+  メニュー文言が変わる箇所（`setUpdateAvailable` / `clearUpdateAvailable`）・invoke 実行後に行う。
+  invoke は依頼の `generation` が現行スナップショットの世代と一致するときのみ実行する（不一致なら再書き出しのみ）。
