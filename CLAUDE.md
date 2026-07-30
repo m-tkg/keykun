@@ -92,6 +92,13 @@ CGEventTap を使うため、以下の固有知見は最重要。壊すと間欠
   再有効化に加えて全ハンドラの `reset()` を呼び、取りこぼし後の状態固着を防ぐ。
 - **左右⌘の判別は device 依存フラグビット**（`flagsChanged` の `event.flags.rawValue`）で行う:
   左⌘ `0x8`（NX_DEVICELCMDKEYMASK）/ 右⌘ `0x10`（NX_DEVICERCMDKEYMASK）。
+- **修飾キー二度押しの押下判定は `ModifierFlagsInterpreter`（KeykunCore）で行う**。device 依存ビットは
+  非公式で、Caps Lock→Control リマップ（システム設定/hidutil）環境ではビットが立たない `flagsChanged` が
+  来ることがあり、ビットだけ見ると押下遷移を観測できず無反応になる（「別の Mac で ctrl 二度押しが効かない」症状）。
+  そのため keyCode（どのキーが変化したかの一次情報）を主として「device ビット → generic mask
+  （`.maskControl` 等の device 非依存フラグ）→ 内部追跡状態のトグル」の3段判定で down/up を決める。
+  Caps Lock（keyCode 57）は generic の control mask がそのイベントで新たに立ったときのみ「左 Control の押下」
+  として扱い、通常のトグル（alphaShift のみ）は無視する。
 - **単押し（`ModifierTapDetector`）は「汚染」で判定**: ⌘押下中に通常キーや他修飾が来たらコンボ扱いで無効化し、
   純粋な押下→解放（しきい時間内）だけを発火させる。これにより `⌘C` 等の通常操作と両立する。
 - **入力切替は「英数/かなキー送出」方式（TISSelectInputSource は使わない）**。`TISSelectInputSource` は
