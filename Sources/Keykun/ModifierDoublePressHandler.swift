@@ -8,7 +8,7 @@ import os
 /// 判定は純粋ロジックに委ねる:
 ///   - `ModifierKeyTapDetector` … 単押し（長押しでない・他キー併用なし）の検知
 ///   - `ModifierKeyDoublePressDecider` … 同じキーの猶予時間内2回目の検知
-/// 本クラスは flagsChanged から、割り当て済みの各物理キーの押下/解放を device 依存ビットで判定し、
+/// 本クラスは flagsChanged の解釈（どのキーが down/up したか）を `ModifierFlagsInterpreter` に委ね、
 /// keyDown / 他修飾の同時押しでコンボ（汚染）を通知する。
 /// イベントは消費しない（通常の修飾キー操作と両立）。
 @MainActor
@@ -17,14 +17,12 @@ final class ModifierDoublePressHandler: KeyEventHandler {
     private var detector = ModifierKeyTapDetector(threshold: ModifierDoublePressTiming.tapThreshold)
     private var decider = ModifierKeyDoublePressDecider(interval: ModifierDoublePressTiming.interval)
 
-    /// 監視対象（アプリ割り当て済み）の物理キー。重複は除く。
-    private var watchedKeys: [ModifierKey] = []
-    /// 各監視キーの直近の押下状態。
-    private var down: [ModifierKey: Bool] = [:]
+    /// flagsChanged の解釈器。監視対象に関係なく全修飾キーを追跡する
+    /// （同種別の反対側の押下状態が汚染判定に必要なため）。監視フィルタは本クラスで行う。
+    private var interpreter = ModifierFlagsInterpreter()
 
-    /// 全修飾キーの device 依存ビット（押下中の修飾キー数を数えてコンボ判定に使う）。
-    private let allModifierBits: [UInt64] =
-        TargetModifier.allCases.flatMap { [$0.leftBit, $0.rightBit] }
+    /// 監視対象（アプリ割り当て済み）の物理キー。重複は除く。
+    private var watchedKeys: Set<ModifierKey> = []
 
     private let log = Logger(subsystem: "com.mtkg.keykun", category: "ModifierDoublePress")
 
@@ -34,7 +32,7 @@ final class ModifierDoublePressHandler: KeyEventHandler {
     func update(_ settings: ModifierDoublePressSettings) {
         self.settings = settings
         // アプリ割り当て済みのキーだけを監視（`.both` の左右展開・重複除去はコア側で実施）。
-        watchedKeys = settings.watchedKeys
+        watchedKeys = Set(settings.watchedKeys)
         // 監視対象が変わると押下状態の意味が変わるため、観測状態をリセットする。
         reset()
     }
@@ -50,24 +48,22 @@ final class ModifierDoublePressHandler: KeyEventHandler {
 
         guard type == .flagsChanged else { return false }
 
-        let raw = event.flags.rawValue
-        // 現在押されている修飾キーの数（複数なら単押しではない）。
-        let pressedCount = allModifierBits.filter { raw & $0 != 0 }.count
+        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        let result = interpreter.interpret(keyCode: keyCode, rawFlags: event.flags.rawValue)
 
-        for key in watchedKeys {
-            let newDown = (raw & key.deviceBit) != 0
-            let wasDown = down[key] ?? false
-            guard newDown != wasDown else { continue }
-            if newDown {
-                detector.keyDown(key, otherModifiersHeld: pressedCount > 1, now: now)
-            } else if let fired = detector.keyUp(key, now: now) {
+        switch result.transition {
+        case .down(let key) where watchedKeys.contains(key):
+            detector.keyDown(key, otherModifiersHeld: result.otherModifiersHeld, now: now)
+        case .up(let key) where watchedKeys.contains(key):
+            if let fired = detector.keyUp(key, now: now) {
                 handleTap(fired)
             }
-            down[key] = newDown
+        default:
+            break
         }
 
         // 対象キー保持中に他の修飾キーが加わったらコンボ扱い。
-        if pressedCount > 1 {
+        if result.multipleModifiersHeld {
             detector.contaminate()
         }
 
@@ -105,7 +101,7 @@ final class ModifierDoublePressHandler: KeyEventHandler {
 
     /// イベント取りこぼし（タップ無効化）後に状態が固着しないよう、観測状態をリセットする。
     func reset() {
-        down.removeAll()
+        interpreter.reset()
         detector.reset()
         decider.reset()
     }

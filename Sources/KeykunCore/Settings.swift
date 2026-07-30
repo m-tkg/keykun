@@ -143,6 +143,9 @@ public struct InputSwitchSettings: Codable, Equatable {
 
 /// 二度押しの対象とする修飾キーの種別。
 /// 左右の判別に使う device 依存フラグビット（IOLLEvent.h の NX_DEVICE*KEYMASK）を持つ。
+///
+/// device ビットは非公式で、Caps Lock→Control リマップ環境等では立たないことがあるため、
+/// 単独では押下判定に使わない（keyCode を一次情報とする `ModifierFlagsInterpreter` を参照）。
 public enum TargetModifier: String, Codable, Equatable, CaseIterable {
     case command
     case option
