@@ -39,6 +39,7 @@
 "tab.safe_quit" = "Safe Quit";
 "tab.input_switch" = "Input Switch";
 "tab.modifier_launch" = "Launch App";
+"tab.slack_escape" = "Slack Esc";
 "tab.general" = "General";
 
 /* General tab */
@@ -53,14 +54,15 @@
 "safe_quit.description" = "Press ⌘Q once to show a reminder; press ⌘Q again within the time window to quit.";
 
 /* Input Switch tab */
-"input_switch.enabled" = "Switch input mode with a single ⌘ tap";
-"input_switch.left" = "Left ⌘ (tap)";
-"input_switch.right" = "Right ⌘ (tap)";
+"input_switch.enabled" = "Switch input mode with a single modifier tap";
+"input_switch.modifier" = "Target modifier key";
+"input_switch.left_dynamic" = "Left %@ (tap)";
+"input_switch.right_dynamic" = "Right %@ (tap)";
 "input_switch.threshold" = "Max single-tap duration";
 "input_switch.action.none" = "None";
 "input_switch.action.eisu" = "Eisu key (English)";
 "input_switch.action.kana" = "Kana key (Japanese)";
-"input_switch.description" = "Tap and release the left/right ⌘ alone (no other keys) to send the Eisu/Kana key, switching the IME mode (works reliably regardless of the current input source). ⌘ still works as a modifier in combinations.";
+"input_switch.description" = "Tap and release the chosen modifier key alone (no other keys) to send the Eisu/Kana key, switching the IME mode (works reliably regardless of the current input source). The key still works normally in combinations.";
 
 /* Launch App tab (modifier double-tap) */
 "modifier_launch.enabled" = "Launch an app by double-tapping a modifier key";
@@ -75,6 +77,10 @@
 "modifier_launch.choose_app" = "Choose app…";
 "modifier_launch.conflict" = "⌘ is already used by Input Switch. Only one of them can be enabled at a time.";
 "modifier_launch.description" = "Tap and release the chosen modifier key alone twice (no other keys) to launch the assigned app. With “Both”, double-tapping either the left or right key launches it (left and right are tracked separately, so a left-then-right mix does not count). If that app is already frontmost, it is hidden instead (toggle). Use a different key from Input Switch to avoid conflicts. The key still works normally in combinations.";
+
+/* Slack Esc tab */
+"slack_escape.enabled" = "Replace Esc in Slack for SKK cancellation";
+"slack_escape.description" = "When Slack is frontmost, plain Esc is consumed before Slack sees it and Ctrl-G is sent instead. This is intended for SKK cancellation.";
 
 /* Common units */
 "common.seconds" = "%.1f sec";

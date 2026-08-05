@@ -40,6 +40,12 @@ Karabiner なしの単独アプリで実現します。今後さまざまなキ�
 - 既定は**無効**（グローバル挙動を変えるため、明示的に有効化して使用）
 - 「単押し」の判定時間（既定 0.5 秒、0.3〜1.0 秒で変更可）
 
+### Slack Esc（SKK 向け）
+
+「**Slack Esc**」タブで有効にすると、Slack が最前面のときだけ修飾キーなしの `Esc` を握りつぶし、
+代わりに `Ctrl-G` を送ります。SKK のキャンセル操作を動かしつつ、Slack 側の `Esc` ショートカットが
+発火するのを避けるための設定です。
+
 ## 多言語対応
 
 GUI は **日本語・英語**に対応し、OS の優先言語に追従します（既定 `en`）。
@@ -61,6 +67,7 @@ Sources/
     KeyEventTap.swift           CGEventTap を共有し各ハンドラへ配信
     SafeQuitHandler.swift       安全な Quit（⌘Q 二度押し）
     InputSwitchHandler.swift    入力切り替え（左右⌘単押し）
+    SlackEscapeHandler.swift    Slack 前面時の Esc→Ctrl-G 置き換え（SKK 向け）
     InputModeKey.swift          英数/かなキーを HID レベルに送出
     AccessibilityPermission.swift
     StatusBarController.swift   メニュー（入口のみ）

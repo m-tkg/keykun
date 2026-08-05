@@ -60,6 +60,9 @@ struct SettingsView: View {
                     hasConflict: viewModel.settings.hasModifierConflict
                 )
                 .tabItem { Text(L.string("tab.modifier_launch")) }
+
+                SlackEscapeSettingsTab(settings: $viewModel.settings.slackEscape)
+                    .tabItem { Text(L.string("tab.slack_escape")) }
                 // 将来のキー機能タブはここに追加する。
             }
             .padding()
@@ -98,6 +101,30 @@ struct SettingsView: View {
         } message: {
             Text(loginItemError ?? "")
         }
+    }
+}
+
+/// 「Slack Esc」タブ。Slack が最前面のときだけ Esc を Ctrl-G に置き換える。
+struct SlackEscapeSettingsTab: View {
+    @SwiftUI.Binding var settings: SlackEscapeSettings
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Toggle(isOn: $settings.isEnabled) {
+                Text(L.string("slack_escape.enabled"))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Text(L.string("slack_escape.description"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
@@ -169,12 +196,21 @@ struct SafeQuitSettingsTab: View {
     }
 }
 
-/// 「入力切り替え」タブ。左右 Command の単押しに送出キー（英数/かな）を割り当てる。
+/// 「入力切り替え」タブ。左右修飾キーの単押しに送出キー（英数/かな）を割り当てる。
 struct InputSwitchSettingsTab: View {
     @SwiftUI.Binding var settings: InputSwitchSettings
 
     /// 単押しとみなす最大押下時間の候補（秒）。
     private let thresholdOptions: [TimeInterval] = [0.3, 0.5, 0.7, 1.0]
+
+    private var modifierSymbol: String {
+        switch settings.targetModifier {
+        case .command: return "⌘"
+        case .option: return "⌥"
+        case .control: return "⌃"
+        case .shift: return "⇧"
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -183,8 +219,28 @@ struct InputSwitchSettingsTab: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            actionPicker(title: L.string("input_switch.left"), selection: $settings.leftCommandAction)
-            actionPicker(title: L.string("input_switch.right"), selection: $settings.rightCommandAction)
+            HStack(alignment: .firstTextBaseline) {
+                Text(L.string("input_switch.modifier"))
+                Spacer(minLength: 12)
+                Picker("", selection: $settings.targetModifier) {
+                    Text(L.string("modifier_launch.modifier.command")).tag(TargetModifier.command)
+                    Text(L.string("modifier_launch.modifier.option")).tag(TargetModifier.option)
+                    Text(L.string("modifier_launch.modifier.control")).tag(TargetModifier.control)
+                    Text(L.string("modifier_launch.modifier.shift")).tag(TargetModifier.shift)
+                }
+                .labelsHidden()
+                .frame(width: 200)
+                .disabled(!settings.isEnabled)
+            }
+
+            actionPicker(
+                title: L.format("input_switch.left_dynamic", modifierSymbol),
+                selection: $settings.leftAction
+            )
+            actionPicker(
+                title: L.format("input_switch.right_dynamic", modifierSymbol),
+                selection: $settings.rightAction
+            )
 
             HStack(alignment: .firstTextBaseline) {
                 Text(L.string("input_switch.threshold"))

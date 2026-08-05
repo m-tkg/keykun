@@ -38,9 +38,11 @@ final class KeyEventTap {
     func start() -> Bool {
         if eventTap != nil { return true }
 
-        // keyDown（通常キー）と flagsChanged（修飾キーの押下/解放）を購読する。
+        // keyDown/keyUp（通常キー）と flagsChanged（修飾キーの押下/解放）を購読する。
         let mask = CGEventMask(
-            (1 << CGEventType.keyDown.rawValue) | (1 << CGEventType.flagsChanged.rawValue)
+            (1 << CGEventType.keyDown.rawValue)
+                | (1 << CGEventType.keyUp.rawValue)
+                | (1 << CGEventType.flagsChanged.rawValue)
         )
         let callback: CGEventTapCallBack = { _, type, event, refcon in
             let tap = Unmanaged<KeyEventTap>.fromOpaque(refcon!).takeUnretainedValue()

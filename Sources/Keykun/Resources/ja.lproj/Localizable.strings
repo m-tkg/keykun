@@ -39,6 +39,7 @@
 "tab.safe_quit" = "安全な Quit";
 "tab.input_switch" = "入力切り替え";
 "tab.modifier_launch" = "アプリ起動";
+"tab.slack_escape" = "Slack Esc";
 "tab.general" = "一般";
 
 /* General tab */
@@ -53,14 +54,15 @@
 "safe_quit.description" = "⌘Q を1回押すと案内を表示し、猶予時間内にもう一度 ⌘Q を押すと終了します。";
 
 /* Input Switch tab */
-"input_switch.enabled" = "左右の ⌘ 単押しで入力モードを切り替える";
-"input_switch.left" = "左 ⌘（単押し）";
-"input_switch.right" = "右 ⌘（単押し）";
+"input_switch.enabled" = "修飾キーの単押しで入力モードを切り替える";
+"input_switch.modifier" = "対象の修飾キー";
+"input_switch.left_dynamic" = "左 %@（単押し）";
+"input_switch.right_dynamic" = "右 %@（単押し）";
 "input_switch.threshold" = "単押しの判定時間";
 "input_switch.action.none" = "なし";
 "input_switch.action.eisu" = "英数キー（英語）";
 "input_switch.action.kana" = "かなキー（日本語）";
-"input_switch.description" = "左右の ⌘ を単独で（他キーと一緒に押さず）押して離すと、英数/かなキーを送って IME のモードを切り替えます（現在の入力ソースに関係なく確実に切り替わります）。⌘ は組み合わせ時は通常どおり修飾キーとして機能します。";
+"input_switch.description" = "選択した修飾キーを単独で（他キーと一緒に押さず）押して離すと、英数/かなキーを送って IME のモードを切り替えます（現在の入力ソースに関係なく確実に切り替わります）。組み合わせ時は通常どおり修飾キーとして機能します。";
 
 /* Launch App tab (modifier double-tap) */
 "modifier_launch.enabled" = "修飾キーの二度押しでアプリを起動する";
@@ -75,6 +77,10 @@
 "modifier_launch.choose_app" = "アプリを選択…";
 "modifier_launch.conflict" = "⌘ は「入力切り替え」で使用中です。どちらか一方のみ有効にできます。";
 "modifier_launch.description" = "修飾キー種別と左右を選び、単独で（他キーと一緒に押さず）2回押して離すと、割り当てたアプリを起動します。「両方」を選ぶと左右どちらかの二度押し（左を2回 または 右を2回）で起動します（左右は別々に判定するため、左→右のような混在の2回では起動しません）。そのアプリが既に最前面なら隠します（トグル）。＋で割り当てを追加、－で削除できます。入力切り替えとは別のキーにすると競合しません。";
+
+/* Slack Esc tab */
+"slack_escape.enabled" = "Slack の Esc を SKK キャンセル用に置き換える";
+"slack_escape.description" = "Slack が最前面のとき、修飾キーなしの Esc を Slack へ渡さず、代わりに Ctrl-G を送ります。SKK のキャンセル操作に使うための設定です。";
 
 /* Common units */
 "common.seconds" = "%.1f 秒";

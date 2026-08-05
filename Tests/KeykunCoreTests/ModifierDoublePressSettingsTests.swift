@@ -217,37 +217,40 @@ final class ModifierDoublePressSettingsTests: XCTestCase {
 
     // MARK: - 入力切替との衝突判定
 
-    func testNoConflictWhenModifierDoublePressDisabled() {
+    func testNoConflictWhenModifierDoublePressDisabledEvenWithSameModifier() {
         var s = Settings.default
         s.inputSwitch.isEnabled = true
+        s.inputSwitch.targetModifier = .command
         s.modifierDoublePress.isEnabled = false
         s.modifierDoublePress.bindings = [ModifierLaunchBinding(modifier: .command, side: .left)]
         XCTAssertFalse(s.hasModifierConflict)
     }
 
-    func testNoConflictWhenInputSwitchDisabled() {
+    func testNoConflictWhenInputSwitchDisabledEvenWithSameModifier() {
         var s = Settings.default
         s.inputSwitch.isEnabled = false
+        s.inputSwitch.targetModifier = .control
         s.modifierDoublePress.isEnabled = true
-        s.modifierDoublePress.bindings = [ModifierLaunchBinding(modifier: .command, side: .left)]
+        s.modifierDoublePress.bindings = [ModifierLaunchBinding(modifier: .control, side: .left)]
         XCTAssertFalse(s.hasModifierConflict)
     }
 
-    func testConflictWhenBothEnabledAndSomeBindingUsesCommand() {
+    func testConflictWhenBothEnabledAndSameModifier() {
         var s = Settings.default
         s.inputSwitch.isEnabled = true
+        s.inputSwitch.targetModifier = .option
         s.modifierDoublePress.isEnabled = true
         s.modifierDoublePress.bindings = [
-            ModifierLaunchBinding(modifier: .option, side: .left),
-            ModifierLaunchBinding(modifier: .command, side: .right),
+            ModifierLaunchBinding(modifier: .command, side: .left),
+            ModifierLaunchBinding(modifier: .option, side: .right),
         ]
         XCTAssertTrue(s.hasModifierConflict)
     }
 
-    func testConflictWhenBothSideBindingUsesCommand() {
-        // side が .both（⌘）でも入力切替と衝突検知する。
+    func testConflictWhenBothSideBindingUsesSameModifier() {
         var s = Settings.default
         s.inputSwitch.isEnabled = true
+        s.inputSwitch.targetModifier = .command
         s.modifierDoublePress.isEnabled = true
         s.modifierDoublePress.bindings = [
             ModifierLaunchBinding(modifier: .command, side: .both),
@@ -255,12 +258,13 @@ final class ModifierDoublePressSettingsTests: XCTestCase {
         XCTAssertTrue(s.hasModifierConflict)
     }
 
-    func testNoConflictWhenNoBindingUsesCommand() {
+    func testNoConflictWhenNoBindingUsesSameModifier() {
         var s = Settings.default
         s.inputSwitch.isEnabled = true
+        s.inputSwitch.targetModifier = .option
         s.modifierDoublePress.isEnabled = true
         s.modifierDoublePress.bindings = [
-            ModifierLaunchBinding(modifier: .option, side: .left),
+            ModifierLaunchBinding(modifier: .command, side: .left),
             ModifierLaunchBinding(modifier: .control, side: .right),
         ]
         XCTAssertFalse(s.hasModifierConflict)
